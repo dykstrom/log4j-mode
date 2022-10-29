@@ -1,0 +1,60 @@
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620957882" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620957882" level="ERROR" thread="main">
+<log4j:message><![CDATA[Or to take arms against a sea of troubles]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620957882" level="INFO" thread="main">
+<log4j:message><![CDATA[Whether 'tis nobler in the mind to suffer]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620957882" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620957882" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620957882" level="WARN" thread="main">
+<log4j:message><![CDATA[The slings and arrows of outrageous fortune]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620957882" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620957882" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620957882" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620957882" level="INFO" thread="main">
+<log4j:message><![CDATA[Whether 'tis nobler in the mind to suffer]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620958038" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620958038" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620958038" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620958038" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620958038" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620958038" level="ERROR" thread="main">
+<log4j:message><![CDATA[Or to take arms against a sea of troubles]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620958038" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620958038" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620958038" level="INFO" thread="main">
+<log4j:message><![CDATA[Whether 'tis nobler in the mind to suffer]]></log4j:message>
+</log4j:event>
+<log4j:event logger="net.sf.log4jmode.Example" timestamp="1164620958038" level="DEBUG" thread="main">
+<log4j:message><![CDATA[To be or not to be, that is the question]]></log4j:message>
+</log4j:event>
