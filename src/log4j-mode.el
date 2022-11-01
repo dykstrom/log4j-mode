@@ -256,20 +256,24 @@ restore the position of the point after auto reverting the buffer."
   :type 'boolean
   :group 'log4j-mode)
 
+(defcustom log4j-mode-hook nil
+  "*Hook run when entering Log4j mode."
+  :type 'hook
+  :group 'log4j-mode)
+
+(defcustom log4j-after-filter-hook nil
+  "*Hook run after updating the filter buffer.
+This hook is run as the very last thing after updating the filter buffer.
+The point is in the filter buffer when the hook is run."
+  :type 'hook
+  :group 'log4j-mode)
+
 ;; ----------------------------------------------------------------------------
 ;; Variables:
 ;; ----------------------------------------------------------------------------
 
 (defconst log4j-mode-version "1.4"
   "The current version of Log4j mode.")
-
-(defvar log4j-mode-hook nil
-  "*Hook run when entering Log4j mode.")
-
-(defvar log4j-after-filter-hook nil
-  "*Hook run after updating the filter buffer.
-This hook is run as the very last thing after updating the filter buffer.
-The point is in the filter buffer when the hook is run.")
 
 (defvar log4j-include-regexp nil
   "A regexp that matches all include filter keywords.
@@ -779,8 +783,9 @@ information on how to customize log record regexps."
 ;;;###autoload (add-to-list 'auto-mode-alist '("\\.log\\'" . log4j-mode))
 
 ;;;###autoload
-(defun log4j-mode ()
+(define-derived-mode log4j-mode nil "Log4j"
   "Major mode for viewing log files.
+
 Log4j mode provides syntax highlighting and filtering of log files.
 It also provides functionality to find and display the declaration
 of a Java identifier found in the log file.
@@ -809,13 +814,7 @@ Finally, the commands `\\<log4j-mode-map>\\[log4j-forward-record]' and `\\<log4j
 across log records.
 
 \\{log4j-mode-local-map}"
-  (interactive)
-  (kill-all-local-variables)
-
-  ;; Set major mode variables
-  (setq major-mode 'log4j-mode)
-  (setq mode-name "Log4j")
-
+  :group 'log4j-mode
   ;; Guess log file format based on patterns found in file
   (log4j-guess-file-format)
 
@@ -840,10 +839,7 @@ across log records.
   (when (buffer-file-name)
     (if log4j-auto-revert-flag
         (auto-revert-mode 1))
-    (add-hook 'after-revert-hook 'log4j-after-revert-function nil t))
-
-  ;; Run any Log4j mode start-up hooks
-  (run-mode-hooks 'log4j-mode-hook))
+    (add-hook 'after-revert-hook 'log4j-after-revert-function nil t)))
 
 (provide 'log4j-mode)
 
