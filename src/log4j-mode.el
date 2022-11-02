@@ -1,12 +1,12 @@
 ;;; log4j-mode.el --- Major mode for viewing log files  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2006-2016 Johan Dykstrom
+;; Copyright (C) 2006-2022 Johan Dykstrom
 
-;; Author: Johan Dykstrom <jody4711-sf@yahoo.se>
+;; Author: Johan Dykstrom
 ;; Created: Jan 2006
-;; Version: 1.4
+;; Version: 1.5
 ;; Keywords: tools
-;; URL: http://log4j-mode.sourceforge.net
+;; URL: https://github.com/dykstrom/log4j-mode
 ;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software: you can redistribute it and/or modify
@@ -46,17 +46,20 @@
 ;; expression around point, and look up the Java identifier found using jtags
 ;; - an Emacs package for editing and browsing Java source code.
 ;;
-;; This command is only enabled if package jtags is loaded. Note that this
-;; version of Log4j mode requires jtags version 0.95 or later. For more
-;; information about jtags, see http://jtags.sourceforge.net.
+;; This command is only enabled if the optional package jtags is loaded. Note
+;; that this version of Log4j mode requires jtags version 0.95 or later. For
+;; more information about jtags, see http://jtags.sourceforge.net.
 ;;
 ;; Finally, the commands `M-}' and `M-{' are redefined to move to the end
 ;; and beginning of the current log record.
 
 ;; Installation:
 
-;; Place "log4j-mode.el" in your `load-path' and place the following lines
-;; of code in your init file:
+;; The recommended way to install log4j-mode is from MELPA, please see
+;; https://melpa.org.
+;;
+;; To install manually, place "log4j-mode.el" in your `load-path' and add the
+;; following lines of code to your init file:
 ;;
 ;; (autoload 'log4j-mode "log4j-mode" "Major mode for viewing log files." t)
 ;; (add-to-list 'auto-mode-alist '("\\.log\\'" . log4j-mode))
@@ -75,14 +78,15 @@
 ;; You can also customize the regular expressions that are used to find the
 ;; beginning and end of multi-line log records. However, in many cases this
 ;; will not be necessary. Log4j mode can automatically detect single-line and
-;; multi-line log records created by Log4j and JDK's built-in logging package.
+;; multi-line log records created by Log4j and the JDK's built-in logging
+;; package.
 ;;
 ;; Log file buffers are auto reverted by default. If you don't like that,
 ;; set `log4j-auto-revert-flag' to nil.
 ;;
 ;; If you use the arrow keys to move around in the text, you can define `C-up'
 ;; and `C-down' to move to the end and beginning of the current log record.
-;; Put the following lines of code in your init file:
+;; Add the following lines of code to your init file:
 ;;
 ;; (add-hook
 ;;  'log4j-mode-hook
@@ -105,6 +109,7 @@
 
 ;;; Change Log:
 
+;;  1.5    2022-11-05  Make Log4j mode a derived mode.
 ;;  1.4    2016-01-08  Added customization of log level regexps and case
 ;;                     sensitive syntax highlighting.
 ;;  1.3    2008-02-28  Changed load method to autoload. Fixed several XEmacs
@@ -222,9 +227,9 @@
   "*Regexp that matches the beginning of a multi-line log record.
 
 Log4j mode can automatically detect single-line and multi-line log records
-created by Log4j and JDK's built-in logging package. If you use another logging
-package, set this variable to a regexp that matches the beginning of a log
-record, e.g. \"<log_record>\".
+created by Log4j and the JDK's built-in logging package. If you use another
+logging package, set this variable to a regexp that matches the beginning
+of a log record, e.g. \"<log_record>\".
 
 See also function `log4j-guess-file-format'."
   :type 'regexp
@@ -234,9 +239,9 @@ See also function `log4j-guess-file-format'."
   "*Regexp that matches the end of a multi-line log record.
 
 Log4j mode can automatically detect single-line and multi-line log records
-created by Log4j and JDK's built-in logging package. If you use another logging
-package, set this variable to a regexp that matches the end of a log record,
-e.g. \"</log_record>\".
+created by Log4j and the JDK's built-in logging package. If you use another
+logging package, set this variable to a regexp that matches the end of a
+log record, e.g. \"</log_record>\".
 
 See also function `log4j-guess-file-format'."
   :type 'regexp
@@ -273,7 +278,7 @@ The point is in the filter buffer when the hook is run."
 ;; Variables:
 ;; ----------------------------------------------------------------------------
 
-(defconst log4j-mode-version "1.4"
+(defconst log4j-mode-version "1.5"
   "The current version of Log4j mode.")
 
 (defvar log4j-include-regexp nil
@@ -800,8 +805,9 @@ Enter any number of include and exclude keywords that will be used to
 filter the log records. Keywords are separated by spaces.
 
 Use `\\<log4j-mode-map>\\[log4j-browse-source]' to show the declaration of the Java identifier around or
-before point. This command is only enabled if package `jtags' is loaded.
-For more information about jtags, see http://jtags.sourceforge.net.
+before point. This command is only enabled if the optional package
+`jtags' is loaded. For more information about jtags, see
+http://jtags.sourceforge.net.
 
 Finally, the commands `\\<log4j-mode-map>\\[log4j-forward-record]' and `\\<log4j-mode-map>\\[log4j-backward-record]' move point forward and backward
 across log records.
