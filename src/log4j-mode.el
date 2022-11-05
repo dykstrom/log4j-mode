@@ -1,12 +1,13 @@
-;;; log4j-mode.el --- major mode for viewing log files
+;;; log4j-mode.el --- Major mode for viewing log files  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2006-2016 Johan Dykstrom
+;; Copyright (C) 2006-2022 Johan Dykstrom
 
-;; Author: Johan Dykstrom <jody4711-sf@yahoo.se>
+;; Author: Johan Dykstrom
 ;; Created: Jan 2006
-;; Version: 1.4
+;; Version: 1.5
 ;; Keywords: tools
-;; URL: http://log4j-mode.sourceforge.net
+;; URL: https://github.com/dykstrom/log4j-mode
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -45,17 +46,20 @@
 ;; expression around point, and look up the Java identifier found using jtags
 ;; - an Emacs package for editing and browsing Java source code.
 ;;
-;; This command is only enabled if package jtags is loaded. Note that this
-;; version of Log4j mode requires jtags version 0.95 or later. For more
-;; information about jtags, see http://jtags.sourceforge.net.
+;; This command is only enabled if the optional package jtags is loaded. Note
+;; that this version of Log4j mode requires jtags version 0.95 or later. For
+;; more information about jtags, see http://jtags.sourceforge.net.
 ;;
 ;; Finally, the commands `M-}' and `M-{' are redefined to move to the end
 ;; and beginning of the current log record.
 
 ;; Installation:
 
-;; Place "log4j-mode.el" in your `load-path' and place the following lines
-;; of code in your init file:
+;; The recommended way to install log4j-mode is from MELPA, please see
+;; https://melpa.org.
+;;
+;; To install manually, place "log4j-mode.el" in your `load-path' and add the
+;; following lines of code to your init file:
 ;;
 ;; (autoload 'log4j-mode "log4j-mode" "Major mode for viewing log files." t)
 ;; (add-to-list 'auto-mode-alist '("\\.log\\'" . log4j-mode))
@@ -65,7 +69,7 @@
 ;; Configuration:
 
 ;; You can customize the faces that are used for syntax highlighting.
-;; Type `M-x customize-group' and enter group name "log4j-mode".
+;; Type `M-x customize-group' and enter group name "log4j".
 ;;
 ;; To customize the regular expressions used to identify log records for
 ;; syntax highlighting, change the variables `log4j-match-error-regexp'
@@ -74,14 +78,15 @@
 ;; You can also customize the regular expressions that are used to find the
 ;; beginning and end of multi-line log records. However, in many cases this
 ;; will not be necessary. Log4j mode can automatically detect single-line and
-;; multi-line log records created by Log4j and JDK's built-in logging package.
+;; multi-line log records created by Log4j and the JDK's built-in logging
+;; package.
 ;;
 ;; Log file buffers are auto reverted by default. If you don't like that,
 ;; set `log4j-auto-revert-flag' to nil.
 ;;
 ;; If you use the arrow keys to move around in the text, you can define `C-up'
 ;; and `C-down' to move to the end and beginning of the current log record.
-;; Put the following lines of code in your init file:
+;; Add the following lines of code to your init file:
 ;;
 ;; (add-hook
 ;;  'log4j-mode-hook
@@ -104,6 +109,7 @@
 
 ;;; Change Log:
 
+;;  1.5    2022-11-05  Make Log4j mode a derived mode.
 ;;  1.4    2016-01-08  Added customization of log level regexps and case
 ;;                     sensitive syntax highlighting.
 ;;  1.3    2008-02-28  Changed load method to autoload. Fixed several XEmacs
@@ -120,7 +126,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(eval-when-compile (require 'cl-lib))
 
 (require 'autorevert)
 
@@ -133,7 +139,7 @@
 ;; Faces and customization:
 ;; ----------------------------------------------------------------------------
 
-(defgroup log4j-mode nil
+(defgroup log4j nil
   "Major mode for viewing log files."
   :link '(emacs-library-link :tag "Source File" "log4j-mode.el")
   :group 'faces
@@ -143,110 +149,110 @@
 (defface log4j-font-lock-debug-face '((t (:foreground "Gray45")))
   "*Font Lock face used to highlight DEBUG log records."
   :group 'font-lock-highlighting-faces
-  :group 'log4j-mode)
+  :group 'log4j)
 (defvar log4j-font-lock-debug-face
   (make-face 'log4j-font-lock-debug-face))
 
 (defface log4j-font-lock-info-face '((t (:foreground "ForestGreen")))
   "*Font Lock face used to highlight INFO log records."
   :group 'font-lock-highlighting-faces
-  :group 'log4j-mode)
+  :group 'log4j)
 (defvar log4j-font-lock-info-face
   (make-face 'log4j-font-lock-info-face))
 
 (defface log4j-font-lock-config-face '((t (:foreground "ForestGreen")))
   "*Font Lock face used to highlight CONFIG log records."
   :group 'font-lock-highlighting-faces
-  :group 'log4j-mode)
+  :group 'log4j)
 (defvar log4j-font-lock-config-face
   (make-face 'log4j-font-lock-config-face))
 
 (defface log4j-font-lock-warn-face '((t (:foreground "DodgerBlue")))
   "*Font Lock face used to highlight WARN log records."
   :group 'font-lock-highlighting-faces
-  :group 'log4j-mode)
+  :group 'log4j)
 (defvar log4j-font-lock-warn-face
   (make-face 'log4j-font-lock-warn-face))
 
 (defface log4j-font-lock-error-face '((t (:foreground "Red")))
   "*Font Lock face used to highlight ERROR log records."
   :group 'font-lock-highlighting-faces
-  :group 'log4j-mode)
+  :group 'log4j)
 (defvar log4j-font-lock-error-face
   (make-face 'log4j-font-lock-error-face))
 
 (defface log4j-font-lock-fatal-face '((t (:foreground "Red" :bold t)))
   "*Font Lock face used to highlight FATAL log records."
   :group 'font-lock-highlighting-faces
-  :group 'log4j-mode)
+  :group 'log4j)
 (defvar log4j-font-lock-fatal-face
   (make-face 'log4j-font-lock-fatal-face))
 
 (defcustom log4j-case-fold-search nil
   "*Non-nil if log record searches and matches should ignore case."
   :type 'boolean
-  :group 'log4j-mode)
+  :group 'log4j)
 
 (defcustom log4j-match-fatal-regexp "\\<\\(FATAL\\)\\>"
   "*Regexp that matches a FATAL log record."
   :type 'regexp
-  :group 'log4j-mode)
+  :group 'log4j)
 
 (defcustom log4j-match-error-regexp "\\<\\(ERROR\\|SEVERE\\)\\>"
   "*Regexp that matches an ERROR log record."
   :type 'regexp
-  :group 'log4j-mode)
+  :group 'log4j)
 
 (defcustom log4j-match-warn-regexp "\\<\\(WARN\\(?:ING\\)?\\)\\>"
   "*Regexp that matches a WARN log record."
   :type 'regexp
-  :group 'log4j-mode)
+  :group 'log4j)
 
 (defcustom log4j-match-info-regexp "\\<\\(INFO\\)\\>"
   "*Regexp that matches an INFO log record."
   :type 'regexp
-  :group 'log4j-mode)
+  :group 'log4j)
 
 (defcustom log4j-match-config-regexp "\\<\\(CONFIG\\)\\>"
   "*Regexp that matches a CONFIG log record."
   :type 'regexp
-  :group 'log4j-mode)
+  :group 'log4j)
 
 (defcustom log4j-match-debug-regexp "\\<\\(DEBUG\\|FINE\\(?:R\\|ST\\)?\\|STATUS\\)\\>"
   "*Regexp that matches a DEBUG log record."
   :type 'regexp
-  :group 'log4j-mode)
+  :group 'log4j)
 
 (defcustom log4j-record-begin-regexp "^"
   "*Regexp that matches the beginning of a multi-line log record.
 
 Log4j mode can automatically detect single-line and multi-line log records
-created by Log4j and JDK's built-in logging package. If you use another logging
-package, set this variable to a regexp that matches the beginning of a log
-record, e.g. \"<log_record>\".
+created by Log4j and the JDK's built-in logging package. If you use another
+logging package, set this variable to a regexp that matches the beginning
+of a log record, e.g. \"<log_record>\".
 
 See also function `log4j-guess-file-format'."
   :type 'regexp
-  :group 'log4j-mode)
+  :group 'log4j)
 
 (defcustom log4j-record-end-regexp "$"
   "*Regexp that matches the end of a multi-line log record.
 
 Log4j mode can automatically detect single-line and multi-line log records
-created by Log4j and JDK's built-in logging package. If you use another logging
-package, set this variable to a regexp that matches the end of a log record,
-e.g. \"</log_record>\".
+created by Log4j and the JDK's built-in logging package. If you use another
+logging package, set this variable to a regexp that matches the end of a
+log record, e.g. \"</log_record>\".
 
 See also function `log4j-guess-file-format'."
   :type 'regexp
-  :group 'log4j-mode)
+  :group 'log4j)
 
 (defcustom log4j-auto-revert-flag 't
   "*Non-nil means that log file buffers have Auto Revert mode on by default.
 When the file on disk changes, the log file buffer will be auto reverted.
 If the log file buffer is filtered, the filter buffer will be updated too."
   :type 'boolean
-  :group 'log4j-mode)
+  :group 'log4j)
 
 (defcustom log4j-restore-point-flag 't
   "*Non-nil means restore position of point after auto reverting buffer.
@@ -254,22 +260,26 @@ When auto reverting a buffer, XEmacs sometimes moves the point to
 `point-min'. Setting this variable to 't makes `auto-revert-buffers'
 restore the position of the point after auto reverting the buffer."
   :type 'boolean
-  :group 'log4j-mode)
+  :group 'log4j)
+
+(defcustom log4j-mode-hook nil
+  "*Hook run when entering Log4j mode."
+  :type 'hook
+  :group 'log4j)
+
+(defcustom log4j-after-filter-hook nil
+  "*Hook run after updating the filter buffer.
+This hook is run as the very last thing after updating the filter buffer.
+The point is in the filter buffer when the hook is run."
+  :type 'hook
+  :group 'log4j)
 
 ;; ----------------------------------------------------------------------------
 ;; Variables:
 ;; ----------------------------------------------------------------------------
 
-(defconst log4j-mode-version "1.4"
+(defconst log4j-mode-version "1.5"
   "The current version of Log4j mode.")
-
-(defvar log4j-mode-hook nil
-  "*Hook run when entering Log4j mode.")
-
-(defvar log4j-after-filter-hook nil
-  "*Hook run after updating the filter buffer.
-This hook is run as the very last thing after updating the filter buffer.
-The point is in the filter buffer when the hook is run.")
 
 (defvar log4j-include-regexp nil
   "A regexp that matches all include filter keywords.
@@ -319,7 +329,7 @@ The original LIST is not modified. PREDICATE should be a function of one
 argument that returns non-nil if the argument should be part of the result
 list. Example:
 
-\(log4j-filter-list \(lambda \(x\) \(> x 3\)\) '\(1 2 3 4 5\)\) -> \(4 5\)"
+\(log4j-filter-list (lambda (x) (> x 3)) '(1 2 3 4 5)) -> (4 5)"
   (let (result)
     (while list
       (if (funcall predicate (car list))
@@ -360,7 +370,7 @@ This is a key function in the package. Both syntax highlighting and
 filtering depend on this function being efficient and correct."
   (let ((case-fold-search log4j-case-fold-search)
         (org-pos (point)))
-    (block while-loop
+    (cl-block while-loop
 
       ;; While there are more matches for REGEXP
       (while (re-search-forward regexp bound t)
@@ -372,8 +382,8 @@ filtering depend on this function being efficient and correct."
                   (progn
                     ;; (message "Regexp `%s' matched at [%d, %d]" regexp begin-pos (point))
                     (set-match-data (list begin-pos (point)))
-                    (return-from while-loop (point)))
-                (return-from while-loop))))))))
+                    (cl-return-from while-loop (point)))
+                (cl-return-from while-loop))))))))
 
 (defsubst log4j-next-record (&optional regexp)
   "Search forward from point for next complete log record.
@@ -546,7 +556,7 @@ first line of the declaration."
             member)
 
         ;; Try to match "package.class.member", where package is optional
-        (if (re-search-forward "\\([A-Za-z0-9_.]+\\\.\\)*\\([A-Za-z0-9_]+\\)\\\.\\([A-Za-z0-9_]+\\|<init>\\)" end-pos t)
+        (if (re-search-forward "\\([A-Za-z0-9_.]+\\.\\)*\\([A-Za-z0-9_]+\\)\\.\\([A-Za-z0-9_]+\\|<init>\\)" end-pos t)
             (progn
               (setq package (match-string 1))
               (if package
@@ -601,14 +611,7 @@ first line of the declaration."
     ;; file has been overwritten with a new, shorter log file
     (if (> log4j-last-highlight-pos (point-max))
         (setq log4j-last-highlight-pos (point-min)))
-
-    ;; If the stored buffer position is equal to point-min, fontify the whole
-    ;; buffer
-    (if (equal log4j-last-highlight-pos (point-min))
-        (font-lock-fontify-buffer)
-
-      ;; Otherwise, fontify only the new text
-      (font-lock-fontify-region log4j-last-highlight-pos (point-max)))
+    (font-lock-ensure log4j-last-highlight-pos (point-max))
     (setq log4j-last-highlight-pos (point-max))))
 
 (defun log4j-match-record-fatal (bound)
@@ -773,20 +776,20 @@ information on how to customize log record regexps."
         (goto-char (point-min))
         (setq log4j-local-record-begin-regexp "^")
         (setq log4j-local-record-end-regexp "$")
-        (setq found (log4j-next-record)))
-      )))
+        (setq found (log4j-next-record))))))
 
 ;;;###autoload (add-to-list 'auto-mode-alist '("\\.log\\'" . log4j-mode))
 
 ;;;###autoload
-(defun log4j-mode ()
+(define-derived-mode log4j-mode nil "Log4j"
   "Major mode for viewing log files.
+
 Log4j mode provides syntax highlighting and filtering of log files.
 It also provides functionality to find and display the declaration
 of a Java identifier found in the log file.
 
 You can customize the faces that are used for syntax highlighting.
-Type `M-x customize-group' and enter group name \"log4j-mode\".
+Type `M-x customize-group' and enter group name \"log4j\".
 
 To customize the regular expressions used to identify log records for
 syntax highlighting, change the variables `log4j-match-error-regexp'
@@ -802,20 +805,15 @@ Enter any number of include and exclude keywords that will be used to
 filter the log records. Keywords are separated by spaces.
 
 Use `\\<log4j-mode-map>\\[log4j-browse-source]' to show the declaration of the Java identifier around or
-before point. This command is only enabled if package `jtags' is loaded.
-For more information about jtags, see http://jtags.sourceforge.net.
+before point. This command is only enabled if the optional package
+`jtags' is loaded. For more information about jtags, see
+http://jtags.sourceforge.net.
 
 Finally, the commands `\\<log4j-mode-map>\\[log4j-forward-record]' and `\\<log4j-mode-map>\\[log4j-backward-record]' move point forward and backward
 across log records.
 
 \\{log4j-mode-local-map}"
-  (interactive)
-  (kill-all-local-variables)
-
-  ;; Set major mode variables
-  (setq major-mode 'log4j-mode)
-  (setq mode-name "Log4j")
-
+  :group 'log4j
   ;; Guess log file format based on patterns found in file
   (log4j-guess-file-format)
 
@@ -840,10 +838,7 @@ across log records.
   (when (buffer-file-name)
     (if log4j-auto-revert-flag
         (auto-revert-mode 1))
-    (add-hook 'after-revert-hook 'log4j-after-revert-function nil t))
-
-  ;; Run any Log4j mode start-up hooks
-  (run-mode-hooks 'log4j-mode-hook))
+    (add-hook 'after-revert-hook #'log4j-after-revert-function nil t)))
 
 (provide 'log4j-mode)
 
