@@ -4,7 +4,7 @@
 
 ;; Author: Johan Dykstrom
 ;; Created: Jan 2006
-;; Version: 1.5
+;; Version: 1.6
 ;; Keywords: tools
 ;; URL: https://github.com/dykstrom/log4j-mode
 ;; Package-Requires: ((emacs "25.1"))
@@ -75,6 +75,9 @@
 ;; syntax highlighting, change the variables `log4j-match-error-regexp'
 ;; etc.
 ;;
+;; To customize whether to syntax highlight the complete log record, or just
+;; the matched keyword, change variable `log4j-highlight-only-keyword'.
+;;
 ;; You can also customize the regular expressions that are used to find the
 ;; beginning and end of multi-line log records. However, in many cases this
 ;; will not be necessary. Log4j mode can automatically detect single-line and
@@ -109,6 +112,7 @@
 
 ;;; Change Log:
 
+;;  1.6    2022-11-12  Add option to highlight only matched keyword.
 ;;  1.5    2022-11-05  Make Log4j mode a derived mode.
 ;;  1.4    2016-01-08  Added customization of log level regexps and case
 ;;                     sensitive syntax highlighting.
@@ -247,6 +251,13 @@ See also function `log4j-guess-file-format'."
   :type 'regexp
   :group 'log4j)
 
+(defcustom log4j-highlight-only-keyword nil
+  "*Non-nil means syntax highlight only the keyword of a log record.
+Setting this variable to nil makes Log4j mode syntax highlight the
+complete log record."
+  :type 'boolean
+  :group 'log4j)
+
 (defcustom log4j-auto-revert-flag 't
   "*Non-nil means that log file buffers have Auto Revert mode on by default.
 When the file on disk changes, the log file buffer will be auto reverted.
@@ -278,7 +289,7 @@ The point is in the filter buffer when the hook is run."
 ;; Variables:
 ;; ----------------------------------------------------------------------------
 
-(defconst log4j-mode-version "1.5"
+(defconst log4j-mode-version "1.6"
   "The current version of Log4j mode.")
 
 (defvar log4j-include-regexp nil
@@ -364,7 +375,8 @@ Set point to the end of the occurrence found, and return point.
 
 An optional second argument BOUND bounds the search; it is a buffer position.
 The match found must not extend after that position.
-This function also sets `match-data' to the entire match.
+This function sets `match-data' to the beginning and end of the matching
+log record, as well as the beginning and end of the text to highlight.
 
 This is a key function in the package. Both syntax highlighting and
 filtering depend on this function being efficient and correct."
@@ -374,16 +386,20 @@ filtering depend on this function being efficient and correct."
 
       ;; While there are more matches for REGEXP
       (while (re-search-forward regexp bound t)
-        (if (re-search-backward log4j-local-record-begin-regexp org-pos t)
-            (let ((begin-pos (point)))
+        (let ((keyword-begin-pos (match-beginning 0))
+              (keyword-end-pos (match-end 0)))
+          (if (re-search-backward log4j-local-record-begin-regexp org-pos t)
+              (let ((record-begin-pos (point)))
 
-              ;; If we found a matching log record, set match data and return
-              (if (re-search-forward log4j-local-record-end-regexp bound t)
-                  (progn
-                    ;; (message "Regexp `%s' matched at [%d, %d]" regexp begin-pos (point))
-                    (set-match-data (list begin-pos (point)))
-                    (cl-return-from while-loop (point)))
-                (cl-return-from while-loop))))))))
+                ;; If we found a matching log record, set match data and return
+                (if (re-search-forward log4j-local-record-end-regexp bound t)
+                    (progn
+                      ;; (message "Regexp `%s' matched at [%d, %d]" regexp record-begin-pos (point))
+                      (if log4j-highlight-only-keyword
+                          (set-match-data (list record-begin-pos (point) keyword-begin-pos keyword-end-pos))
+                        (set-match-data (list record-begin-pos (point) record-begin-pos (point))))
+                      (cl-return-from while-loop (point)))
+                  (cl-return-from while-loop)))))))))
 
 (defsubst log4j-next-record (&optional regexp)
   "Search forward from point for next complete log record.
@@ -639,12 +655,12 @@ first line of the declaration."
   (log4j-record-search-forward log4j-match-debug-regexp bound))
 
 (defvar log4j-font-lock-keywords
-  (list '(log4j-match-record-fatal 0 'log4j-font-lock-fatal-face)
-        '(log4j-match-record-error 0 'log4j-font-lock-error-face)
-        '(log4j-match-record-warn  0 'log4j-font-lock-warn-face)
-        '(log4j-match-record-info  0 'log4j-font-lock-info-face)
-        '(log4j-match-record-config  0 'log4j-font-lock-config-face)
-        '(log4j-match-record-debug 0 'log4j-font-lock-debug-face))
+  (list '(log4j-match-record-fatal 1 'log4j-font-lock-fatal-face)
+        '(log4j-match-record-error 1 'log4j-font-lock-error-face)
+        '(log4j-match-record-warn 1 'log4j-font-lock-warn-face)
+        '(log4j-match-record-info 1 'log4j-font-lock-info-face)
+        '(log4j-match-record-config 1 'log4j-font-lock-config-face)
+        '(log4j-match-record-debug 1 'log4j-font-lock-debug-face))
   "Describes how to syntax highlight keywords in Log4j mode buffers.")
 
 ;; ----------------------------------------------------------------------------
@@ -794,6 +810,9 @@ Type `M-x customize-group' and enter group name \"log4j\".
 To customize the regular expressions used to identify log records for
 syntax highlighting, change the variables `log4j-match-error-regexp'
 etc.
+
+To customize whether to syntax highlight the complete log record, or just
+the matched keyword, change variable `log4j-highlight-only-keyword'.
 
 You can also customize the regular expressions that are used to find
 the beginning and end of multi-line log records. However, in many
