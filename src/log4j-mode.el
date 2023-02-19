@@ -1,10 +1,10 @@
 ;;; log4j-mode.el --- Major mode for viewing log files  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2006-2022 Johan Dykstrom
+;; Copyright (C) 2006-2023 Johan Dykstrom
 
 ;; Author: Johan Dykstrom
 ;; Created: Jan 2006
-;; Version: 1.6
+;; Version: 1.6.1
 ;; Keywords: tools
 ;; URL: https://github.com/dykstrom/log4j-mode
 ;; Package-Requires: ((emacs "25.1"))
@@ -112,6 +112,7 @@
 
 ;;; Change Log:
 
+;;  1.6.1  2023-02-18  Enable jit-lock-mode for single-line log records.
 ;;  1.6    2022-11-12  Add option to highlight only matched keyword.
 ;;  1.5    2022-11-05  Make Log4j mode a derived mode.
 ;;  1.4    2016-01-08  Added customization of log level regexps and case
@@ -289,7 +290,7 @@ The point is in the filter buffer when the hook is run."
 ;; Variables:
 ;; ----------------------------------------------------------------------------
 
-(defconst log4j-mode-version "1.6"
+(defconst log4j-mode-version "1.6.1"
   "The current version of Log4j mode.")
 
 (defvar log4j-include-regexp nil
@@ -794,6 +795,11 @@ information on how to customize log record regexps."
         (setq log4j-local-record-end-regexp "$")
         (setq found (log4j-next-record))))))
 
+(defun log4j-single-line-p ()
+  "Return non-nil if buffer has single-line log records."
+  (and (string= log4j-local-record-begin-regexp "^")
+       (string= log4j-local-record-end-regexp "$")))
+
 ;;;###autoload (add-to-list 'auto-mode-alist '("\\.log\\'" . log4j-mode))
 
 ;;;###autoload
@@ -837,13 +843,13 @@ across log records.
   (log4j-guess-file-format)
 
   ;; Use a buffer local copy of global Log4j keymap
-  (set (make-local-variable 'log4j-mode-local-map) (copy-keymap log4j-mode-map))
+  (setq-local log4j-mode-local-map (copy-keymap log4j-mode-map))
   (use-local-map log4j-mode-local-map)
 
-  ;; Disable font-lock-support-mode - the Font Lock support modes do not work
-  ;; well with multi-line log records
-  (set (make-local-variable 'font-lock-support-mode) nil)
-  (set (make-local-variable 'font-lock-defaults) '(log4j-font-lock-keywords t t))
+  ;; Disable font-lock-support-mode for multi-line log records
+  (unless (log4j-single-line-p)
+    (setq-local font-lock-support-mode nil))
+  (setq-local font-lock-defaults '(log4j-font-lock-keywords t t))
 
   ;; Turn on font-lock-mode
   (if (not font-lock-mode)
