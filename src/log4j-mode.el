@@ -4,7 +4,7 @@
 
 ;; Author: Johan Dykstrom
 ;; Created: Jan 2006
-;; Version: 1.7
+;; Version: 1.7.1
 ;; Keywords: tools
 ;; URL: https://github.com/dykstrom/log4j-mode
 ;; Package-Requires: ((emacs "25.1"))
@@ -112,6 +112,7 @@
 
 ;;; Change Log:
 
+;;  1.7.1  2023-08-26  Fix compile warnings for Emacs 29.
 ;;  1.7    2023-03-18  Remove log4j-mode-local-map.
 ;;  1.6.1  2023-02-18  Enable jit-lock-mode for single-line log records.
 ;;  1.6    2022-11-12  Add option to highlight only matched keyword.
@@ -135,6 +136,7 @@
 (eval-when-compile (require 'cl-lib))
 
 (require 'autorevert)
+(require 'font-lock)
 
 ;; Use package jtags if available
 (condition-case nil
@@ -270,7 +272,7 @@ If the log file buffer is filtered, the filter buffer will be updated too."
 (defcustom log4j-restore-point-flag 't
   "*Non-nil means restore position of point after auto reverting buffer.
 When auto reverting a buffer, XEmacs sometimes moves the point to
-`point-min'. Setting this variable to 't makes `auto-revert-buffers'
+`point-min'. Setting this variable to t makes `auto-revert-buffers'
 restore the position of the point after auto reverting the buffer."
   :type 'boolean
   :group 'log4j)
@@ -291,7 +293,7 @@ The point is in the filter buffer when the hook is run."
 ;; Variables:
 ;; ----------------------------------------------------------------------------
 
-(defconst log4j-mode-version "1.7"
+(defconst log4j-mode-version "1.7.1"
   "The current version of Log4j mode.")
 
 (defvar log4j-include-regexp nil
@@ -342,7 +344,7 @@ The original LIST is not modified. PREDICATE should be a function of one
 argument that returns non-nil if the argument should be part of the result
 list. Example:
 
-\(log4j-filter-list (lambda (x) (> x 3)) '(1 2 3 4 5)) -> (4 5)"
+\(log4j-filter-list (lambda (x) (> x 3)) \\='(1 2 3 4 5)) -> (4 5)"
   (let (result)
     (while list
       (if (funcall predicate (car list))
@@ -844,8 +846,7 @@ across log records.
   (setq-local font-lock-defaults '(log4j-font-lock-keywords t t))
 
   ;; Turn on font-lock-mode
-  (if (not font-lock-mode)
-      (font-lock-mode 1))
+  (font-lock-refresh-defaults)
 
   ;; The buffer is completely fontified from the beginning, so "after revert
   ;; fontification" should start at point-max
